@@ -22,6 +22,22 @@ inline T get_v(const nlohmann::json& j, std::string_view key)
     }
 }
 
+template<class T>
+inline std::vector<T> get_vec(const nlohmann::json& j, std::string_view key)
+{
+    if (j.find(key.data()) == j.end() || j.at(key.data()).is_null()) {
+        return std::vector<T>{};
+    }
+    std::vector<T> vec{};
+    for (auto& it = j.at(key.data()).begin(); it != j.at(key.data()).end(); it++) {
+        if ((*it).is_null()) {
+            continue;
+        }
+        vec.emplace_back(it.value());
+    }
+    return vec;
+}
+
 enum AgeRating {
     AG_UNKNOWN = -1,
     PG,
@@ -225,7 +241,7 @@ private:
 public:
     std::string get_en() const { return en; }
     std::string& get_mutable_en() { return en; }
-    void set_en(std::string& value) { this->en = value; }
+    void set_en(const std::string& value) { this->en = value; }
 
     const std::string& get_en_jp() const { return en_jp; }
     std::string& get_mutable_en_jp() { return en_jp; }
@@ -237,15 +253,15 @@ public:
 
     std::string get_en_us() const { return en_us; }
     std::string& get_mutable_en_us() { return en_us; }
-    void set_en_us(std::string& value) { this->en_us = value; }
+    void set_en_us(const std::string& value) { this->en_us = value; }
 
     std::string get_en_ch() const { return en_ch; }
     std::string& get_mutable_en_ch() { return en_ch; }
-    void set_en_ch(std::string& value) { this->en_ch = value; }
+    void set_en_ch(const std::string& value) { this->en_ch = value; }
 
     std::string get_zh_cn() const { return zh_cn; }
     std::string& get_mutable_zh_cn() { return zh_cn; }
-    void set_zh_cn(std::string& value) { this->zh_cn = value; }
+    void set_zh_cn(const std::string& value) { this->zh_cn = value; }
 };
 void from_json(const nlohmann::json& j, Titles& title)
 {
@@ -441,7 +457,7 @@ void from_json(const nlohmann::json& j, Attributes& attr)
     attr.set_titles(get_v<Titles>(j, "titles"));
     attr.set_canonical_title(get_v<std::string>(j, "canonicalTitle"));
 
-    attr.set_abbreviated_titles(get_v<std::vector<std::string>>(j, "abbreviatedTitles"));
+    attr.set_abbreviated_titles(get_vec<std::string>(j, "abbreviatedTitles"));
 
     attr.set_average_rating(get_v<std::string>(j, "averageRating"));
 
@@ -654,7 +670,7 @@ public:
 };
 void from_json(const nlohmann::json& j, AnimeJson& aj)
 {
-    aj.set_data(get_v<std::vector<Datum>>(j, "data"));
+    aj.set_data(get_vec<Datum>(j, "data"));
     aj.set_meta(get_v<AnimeJsonMeta>(j, "meta"));
     aj.set_links(get_v<AnimeJsonLinks>(j, "links"));
 }
